@@ -1,6 +1,6 @@
 // API Configuration and base setup
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
+  import.meta.env.VITE_API_BASE_URL || "https://sdn-pe-server.onrender.com";
 
 // Direct API Response (no wrapper)
 export type ApiResponse<T> = T;
