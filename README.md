@@ -1,73 +1,87 @@
-# Welcome to your Lovable project
+# Contact Management Client
 
-## Project info
+A modern React application for managing contacts with real-time search functionality.
 
-**URL**: https://lovable.dev/projects/7d15daa8-6f59-4843-82eb-ce69d1803252
+## 🚀 Quick Start
 
-## How can I edit this code?
+### Prerequisites
 
-There are several ways of editing your application.
+- Node.js 18+ & npm
+- Backend API running on `http://localhost:3001`
 
-**Use Lovable**
+### Installation
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/7d15daa8-6f59-4843-82eb-ce69d1803252) and start prompting.
+```bash
+# Clone the repository
+git clone https://github.com/nhanbernie/sdn-pe-client.git
+cd contact-client
 
-Changes made via Lovable will be committed automatically to this repo.
+# Install dependencies
+npm install
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The app will be available at `http://localhost:5173`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🛠 Tech Stack
 
-**Use GitHub Codespaces**
+- **React 18** + **TypeScript**
+- **Vite** - Build tool
+- **TanStack Query** - Data fetching
+- **Shadcn/ui** + **Tailwind CSS** - UI components
+- **React Router** - Navigation
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 📋 Features
 
-## What technologies are used for this project?
+- ✅ **CRUD Operations** - Create, Read, Update, Delete contacts
+- ✅ **Real-time Search** - Search contacts by name with debouncing
+- ✅ **Group Filtering** - Filter contacts by categories
+- ✅ **Sorting** - Sort contacts A-Z or Z-A
+- ✅ **Pagination** - Navigate through contact pages
+- ✅ **Responsive Design** - Works on all devices
 
-This project is built with:
+## 🔧 Configuration
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Create `.env.local` file:
 
-## How can I deploy this project?
+```env
+VITE_API_BASE_URL=http://localhost:3001/api
+```
 
-Simply open [Lovable](https://lovable.dev/projects/7d15daa8-6f59-4843-82eb-ce69d1803252) and click on Share -> Publish.
+## 📖 API Integration
 
-## Can I connect a custom domain to my Lovable project?
+The app integrates with a REST API:
 
-Yes, you can!
+- `GET /api/contacts?search=term` - Get/search contacts
+- `GET /api/contacts/:id` - Get single contact
+- `POST /api/contacts` - Create contact
+- `PATCH /api/contacts/:id` - Update contact
+- `DELETE /api/contacts/:id` - Delete contact
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 🏗 Project Structure
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+```
+src/
+├── components/         # React components
+├── hooks/             # Custom React hooks
+├── services/          # API service layer
+├── types/             # TypeScript type definitions
+└── lib/               # Utility functions
+```
+
+## 🚀 Deployment
+
+```bash
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+## 📚 Additional Documentation
+
+- [API_MAPPING.md](./API_MAPPING.md) - API integration details
+- [SEARCH_TESTING.md](./SEARCH_TESTING.md) - Search functionality testing guide

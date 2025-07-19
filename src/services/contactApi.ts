@@ -7,10 +7,21 @@ import {
 } from "@/types/contact";
 
 export class ContactAPI {
-  // Get all contacts - returns array directly
+  // Get all contacts with optional search parameter
   static async getContacts(params: ContactsSearchParams = {}) {
-    // For now, API doesn't support pagination/filtering, so we get all and filter client-side
-    return apiClient.get<Contact[]>("/contacts");
+    // Build query parameters
+    const queryParams: Record<string, string> = {};
+
+    if (params.search) {
+      queryParams.search = params.search;
+    }
+
+    // Note: Backend may support other params in the future like group, sortBy, etc.
+    if (params.group && params.group !== "Tất cả") {
+      queryParams.group = params.group;
+    }
+
+    return apiClient.get<Contact[]>("/contacts", queryParams);
   }
 
   // Get contact by ID

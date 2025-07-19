@@ -14,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
+import SearchResultsInfo from "./SearchResultsInfo";
 import { useContacts, useDeleteContact } from "@/hooks/useContacts";
 import { NormalizedContact, CONTACT_GROUPS } from "@/types/contact";
 
@@ -23,6 +24,7 @@ const ContactManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("Tất cả");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [currentPage, setCurrentPage] = useState(1);
@@ -31,6 +33,15 @@ const ContactManagement = () => {
     contact?: NormalizedContact;
   }>({ open: false });
   const contactsPerPage = 6;
+
+  // Debounce search term to avoid too many API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   // API hooks
   const {
@@ -41,7 +52,7 @@ const ContactManagement = () => {
   } = useContacts({
     page: currentPage,
     limit: contactsPerPage,
-    search: searchTerm || undefined,
+    search: debouncedSearchTerm || undefined,
     group: selectedGroup !== "Tất cả" ? selectedGroup : undefined,
     sortBy: "name",
     sortOrder,
@@ -57,7 +68,7 @@ const ContactManagement = () => {
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, selectedGroup, sortOrder]);
+  }, [debouncedSearchTerm, selectedGroup, sortOrder]);
 
   const handleDeleteClick = (contact: NormalizedContact) => {
     setDeleteDialog({ open: true, contact });
@@ -159,6 +170,13 @@ const ContactManagement = () => {
             </Button>
           </div>
         </div>
+
+        {/* Search Results Info */}
+        <SearchResultsInfo
+          searchTerm={debouncedSearchTerm}
+          totalResults={totalContacts}
+          isLoading={isLoading}
+        />
 
         {/* Contact Cards */}
         {isLoading ? (

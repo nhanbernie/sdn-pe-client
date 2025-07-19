@@ -15,37 +15,32 @@ import { useMemo } from "react";
 export const contactKeys = {
   all: ["contacts"] as const,
   lists: () => [...contactKeys.all, "list"] as const,
+  list: (params: ContactsSearchParams) =>
+    [...contactKeys.lists(), params] as const,
   details: () => [...contactKeys.all, "detail"] as const,
   detail: (id: string) => [...contactKeys.details(), id] as const,
 };
 
-// Get all contacts and apply client-side filtering
+// Get contacts with server-side search and client-side filtering/pagination
 export const useContacts = (params: ContactsSearchParams = {}) => {
   const query = useQuery({
-    queryKey: contactKeys.lists(),
-    queryFn: () => ContactAPI.getContacts(),
+    queryKey: contactKeys.list(params),
+    queryFn: () =>
+      ContactAPI.getContacts({
+        search: params.search, // Pass search to backend
+        group: params.group, // Pass group to backend if supported
+      }),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Client-side filtering and pagination
+  // Client-side filtering and pagination for additional features
   const processedData = useMemo(() => {
     if (!query.data) return { data: [], total: 0, totalPages: 0 };
 
     const contacts = query.data;
     let filtered = contacts.map(normalizeContact);
 
-    // Apply search filter
-    if (params.search) {
-      const searchTerm = params.search.toLowerCase();
-      filtered = filtered.filter(
-        (contact) =>
-          contact.name.toLowerCase().includes(searchTerm) ||
-          contact.email.toLowerCase().includes(searchTerm) ||
-          (contact.phone && contact.phone.toLowerCase().includes(searchTerm))
-      );
-    }
-
-    // Apply group filter
+    // Apply additional group filter if needed (fallback for client-side)
     if (params.group && params.group !== "Tất cả") {
       filtered = filtered.filter((contact) => contact.group === params.group);
     }
