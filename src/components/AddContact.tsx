@@ -4,9 +4,17 @@ import { ArrowLeft, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useCreateContact } from "@/hooks/useContacts";
+import { CONTACT_GROUPS } from "@/types/contact";
 
 interface ContactFormData {
   name: string;
@@ -15,23 +23,18 @@ interface ContactFormData {
   group: string;
 }
 
-interface AddContactProps {
-  onAddContact?: (contact: ContactFormData & { id: string }) => void;
-}
-
-const groups = ["Bạn bè", "Công việc", "Gia đình", "Khách hàng", "Đối tác"];
-
-const AddContact = ({ onAddContact }: AddContactProps) => {
+const AddContact = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [formData, setFormData] = useState<ContactFormData>({
     name: "",
     email: "",
     phone: "",
-    group: ""
+    group: "",
   });
   const [errors, setErrors] = useState<Partial<ContactFormData>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const createContactMutation = useCreateContact();
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -57,45 +60,29 @@ const AddContact = ({ onAddContact }: AddContactProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const newContact = {
-        ...formData,
-        id: Date.now().toString()
-      };
-
-      onAddContact?.(newContact);
-      
-      toast({
-        title: "Thành công",
-        description: "Liên hệ đã được thêm thành công",
+      await createContactMutation.mutateAsync({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        group: formData.group,
       });
 
       navigate("/");
     } catch (error) {
-      toast({
-        title: "Lỗi",
-        description: "Có lỗi xảy ra khi thêm liên hệ",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
+      // Error handling is done in the mutation hook
     }
   };
 
   const handleInputChange = (field: keyof ContactFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
 
@@ -104,16 +91,20 @@ const AddContact = ({ onAddContact }: AddContactProps) => {
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             onClick={() => navigate("/")}
             className="mb-4 -ml-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Quay lại danh sách
           </Button>
-          <h1 className="text-3xl font-bold text-foreground">Thêm liên hệ mới</h1>
-          <p className="text-muted-foreground">Điền thông tin để tạo liên hệ mới</p>
+          <h1 className="text-3xl font-bold text-foreground">
+            Thêm liên hệ mới
+          </h1>
+          <p className="text-muted-foreground">
+            Điền thông tin để tạo liên hệ mới
+          </p>
         </div>
 
         {/* Form */}
@@ -172,12 +163,15 @@ const AddContact = ({ onAddContact }: AddContactProps) => {
               {/* Group Field */}
               <div className="space-y-2">
                 <Label htmlFor="group">Nhóm</Label>
-                <Select value={formData.group} onValueChange={(value) => handleInputChange("group", value)}>
+                <Select
+                  value={formData.group}
+                  onValueChange={(value) => handleInputChange("group", value)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Chọn nhóm" />
                   </SelectTrigger>
                   <SelectContent>
-                    {groups.map((group) => (
+                    {CONTACT_GROUPS.map((group) => (
                       <SelectItem key={group} value={group}>
                         {group}
                       </SelectItem>
@@ -190,17 +184,19 @@ const AddContact = ({ onAddContact }: AddContactProps) => {
               <div className="flex gap-4 pt-4">
                 <Button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={createContactMutation.isPending}
                   className="flex items-center gap-2"
                 >
                   <Save className="h-4 w-4" />
-                  {isSubmitting ? "Đang lưu..." : "Lưu liên hệ"}
+                  {createContactMutation.isPending
+                    ? "Đang lưu..."
+                    : "Lưu liên hệ"}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => navigate("/")}
-                  disabled={isSubmitting}
+                  disabled={createContactMutation.isPending}
                 >
                   Hủy
                 </Button>

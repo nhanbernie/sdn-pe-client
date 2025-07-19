@@ -4,9 +4,17 @@ import { ArrowLeft, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useContact, useUpdateContact } from "@/hooks/useContacts";
+import { UpdateContactRequest, CONTACT_GROUPS } from "@/types/contact";
 
 interface ContactFormData {
   name: string;
@@ -15,76 +23,44 @@ interface ContactFormData {
   group: string;
 }
 
-interface Contact extends ContactFormData {
-  id: string;
-}
-
-interface EditContactProps {
-  contacts?: Contact[];
-  onUpdateContact?: (contact: Contact) => void;
-}
-
-const groups = ["Bạn bè", "Công việc", "Gia đình", "Khách hàng", "Đối tác"];
-
-// Mock data for demo
-const mockContacts: Contact[] = [
-  { id: "1", name: "Nguyễn Văn A", email: "nguyenvana@email.com", phone: "0901234567", group: "Khách hàng" },
-  { id: "2", name: "Trần Thị B", email: "tranthib@email.com", phone: "0912345678", group: "Đối tác" },
-  { id: "3", name: "Lê Minh C", email: "leminhc@email.com", phone: "0923456789", group: "Bạn bè" },
-];
-
-const EditContact = ({ contacts = mockContacts, onUpdateContact }: EditContactProps) => {
+const EditContact = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
-  
+
   const [formData, setFormData] = useState<ContactFormData>({
     name: "",
     email: "",
     phone: "",
-    group: ""
+    group: "",
   });
   const [errors, setErrors] = useState<Partial<ContactFormData>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [loading, setLoading] = useState(true);
+
+  // API hooks
+  const { data: contact, isLoading, error } = useContact(id!);
+  const updateContactMutation = useUpdateContact();
 
   useEffect(() => {
-    // Simulate API call to get contact details
-    const fetchContact = async () => {
-      try {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const contact = contacts.find(c => c.id === id);
-        
-        if (contact) {
-          setFormData({
-            name: contact.name,
-            email: contact.email,
-            phone: contact.phone,
-            group: contact.group
-          });
-        } else {
-          toast({
-            title: "Lỗi",
-            description: "Không tìm thấy liên hệ",
-            variant: "destructive",
-          });
-          navigate("/");
-        }
-      } catch (error) {
-        toast({
-          title: "Lỗi",
-          description: "Có lỗi xảy ra khi tải thông tin liên hệ",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (id) {
-      fetchContact();
+    if (contact) {
+      setFormData({
+        name: contact.name,
+        email: contact.email,
+        phone: contact.phone || "",
+        group: contact.group,
+      });
     }
-  }, [id, contacts, navigate, toast]);
+  }, [contact]);
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Lỗi",
+        description: "Không tìm thấy liên hệ",
+        variant: "destructive",
+      });
+      navigate("/");
+    }
+  }, [error, navigate, toast]);
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -110,49 +86,36 @@ const EditContact = ({ contacts = mockContacts, onUpdateContact }: EditContactPr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const updatedContact = {
-        ...formData,
-        id: id!
-      };
-
-      onUpdateContact?.(updatedContact);
-      
-      toast({
-        title: "Thành công",
-        description: "Liên hệ đã được cập nhật thành công",
+      await updateContactMutation.mutateAsync({
+        id: id!,
+        data: {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone || undefined,
+          group: formData.group,
+        },
       });
 
       navigate("/");
     } catch (error) {
-      toast({
-        title: "Lỗi",
-        description: "Có lỗi xảy ra khi cập nhật liên hệ",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
+      // Error handling is done in the mutation hook
     }
   };
 
   const handleInputChange = (field: keyof ContactFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background p-6">
         <div className="max-w-2xl mx-auto">
@@ -194,15 +157,17 @@ const EditContact = ({ contacts = mockContacts, onUpdateContact }: EditContactPr
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             onClick={() => navigate("/")}
             className="mb-4 -ml-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Quay lại danh sách
           </Button>
-          <h1 className="text-3xl font-bold text-foreground">Chỉnh sửa liên hệ</h1>
+          <h1 className="text-3xl font-bold text-foreground">
+            Chỉnh sửa liên hệ
+          </h1>
           <p className="text-muted-foreground">Cập nhật thông tin liên hệ</p>
         </div>
 
@@ -262,12 +227,15 @@ const EditContact = ({ contacts = mockContacts, onUpdateContact }: EditContactPr
               {/* Group Field */}
               <div className="space-y-2">
                 <Label htmlFor="group">Nhóm</Label>
-                <Select value={formData.group} onValueChange={(value) => handleInputChange("group", value)}>
+                <Select
+                  value={formData.group}
+                  onValueChange={(value) => handleInputChange("group", value)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Chọn nhóm" />
                   </SelectTrigger>
                   <SelectContent>
-                    {groups.map((group) => (
+                    {CONTACT_GROUPS.map((group) => (
                       <SelectItem key={group} value={group}>
                         {group}
                       </SelectItem>
@@ -280,17 +248,19 @@ const EditContact = ({ contacts = mockContacts, onUpdateContact }: EditContactPr
               <div className="flex gap-4 pt-4">
                 <Button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={updateContactMutation.isPending}
                   className="flex items-center gap-2"
                 >
                   <Save className="h-4 w-4" />
-                  {isSubmitting ? "Đang lưu..." : "Cập nhật liên hệ"}
+                  {updateContactMutation.isPending
+                    ? "Đang lưu..."
+                    : "Cập nhật liên hệ"}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => navigate("/")}
-                  disabled={isSubmitting}
+                  disabled={updateContactMutation.isPending}
                 >
                   Hủy
                 </Button>
