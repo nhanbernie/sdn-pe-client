@@ -47,8 +47,7 @@ export const CONTACT_GROUPS = [
   "Friends", // Matching API data
   "Work", // Matching API data
   "Family", // Matching API data
-  "Khách hàng",
-  "Đối tác",
+  "Other"
 ] as const;
 
 export type ContactGroup = (typeof CONTACT_GROUPS)[number];

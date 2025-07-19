@@ -8,6 +8,7 @@ A modern React application for managing contacts with real-time search functiona
 
 - Node.js 18+ & npm
 - Backend API running on `http://localhost:3001`
+- Backend API url `https://sdn-pe-server.onrender.com`
 
 ### Installation
 
@@ -35,12 +36,12 @@ The app will be available at `http://localhost:5173`
 
 ## 📋 Features
 
-- ✅ **CRUD Operations** - Create, Read, Update, Delete contacts
-- ✅ **Real-time Search** - Search contacts by name with debouncing
-- ✅ **Group Filtering** - Filter contacts by categories
-- ✅ **Sorting** - Sort contacts A-Z or Z-A
-- ✅ **Pagination** - Navigate through contact pages
-- ✅ **Responsive Design** - Works on all devices
+- **CRUD Operations** - Create, Read, Update, Delete contacts
+- **Real-time Search** - Search contacts by name with debouncing
+- **Group Filtering** - Filter contacts by categories
+- **Sorting** - Sort contacts A-Z or Z-A
+- **Pagination** - Navigate through contact pages
+- **Responsive Design** - Works on all devices
 
 ## 🔧 Configuration
 
@@ -81,7 +82,3 @@ npm run build
 npm run preview
 ```
 
-## 📚 Additional Documentation
-
-- [API_MAPPING.md](./API_MAPPING.md) - API integration details
-- [SEARCH_TESTING.md](./SEARCH_TESTING.md) - Search functionality testing guide
